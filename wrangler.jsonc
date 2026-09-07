@@ -14,7 +14,9 @@
 		// TEAM_DOMAIN may be the base Access URL or the full /cdn-cgi/access/certs URL.
 		// The worker now fails closed outside local development if Access is not configured.
 		"DOMAINS": "koora-group.com",
-		"EMAIL_ADDRESSES": ["contact@koora-group.com", "ridwan.p@koora-group.com", "kossivi.a@koora-group.com"]
+		"EMAIL_ADDRESSES": ["contact@koora-group.com", "ridwan.p@koora-group.com", "kossivi.a@koora-group.com"],
+		"POLICY_AUD": "ad42cedb35630476da8d655fe294cd9196e11640b4140175178159c7fbf21e79",
+		"TEAM_DOMAIN": "https://still-shape-3f05.cloudflareaccess.com/cdn-cgi/access/certs"
 	},
 	"send_email": [
 		{
