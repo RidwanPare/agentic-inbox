@@ -88,7 +88,18 @@ app.use("/api/v1/mailboxes/:mailboxId/*", requireMailbox);
 app.get("/api/v1/config", (c) => {
 	const domainsRaw = c.env.DOMAINS || "";
 	const domains = domainsRaw.split(",").map((d) => d.trim()).filter(Boolean);
-	const emailAddresses = c.env.EMAIL_ADDRESSES ?? [];
+	let emailAddresses = c.env.EMAIL_ADDRESSES ?? [];
+	
+	const userEmail = c.req.header("cf-access-authenticated-user-email");
+	const isLocal = new URL(c.req.url).hostname === "localhost" || new URL(c.req.url).hostname === "127.0.0.1";
+	
+	if (!isLocal && userEmail) {
+		const allowed = USER_PERMISSIONS[userEmail.toLowerCase()] || [];
+		emailAddresses = emailAddresses.filter((a: string) => allowed.includes(a.toLowerCase()));
+	} else if (!isLocal && !userEmail) {
+		emailAddresses = []; // Bloquer
+	}
+	
 	return c.json({ domains, emailAddresses });
 });
 
