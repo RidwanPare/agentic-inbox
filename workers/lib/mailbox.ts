@@ -10,6 +10,7 @@
 import { createMiddleware } from "hono/factory";
 import type { MailboxDO } from "../durableObject";
 import type { Env } from "../types";
+import { canAccessMailbox } from "./permissions";
 
 export type MailboxContext = {
 	Bindings: Env;
@@ -22,6 +23,14 @@ export const requireMailbox = createMiddleware<MailboxContext>(async (c, next) =
 	const rawId = c.req.param("mailboxId");
 	if (!rawId) return c.json({ error: "Mailbox ID required" }, 400);
 	const mailboxId = decodeURIComponent(rawId);
+
+	// Vérifier les permissions RBAC
+	const userEmail = c.req.header("cf-access-authenticated-user-email");
+	// Check if we are in local dev by looking at the URL, otherwise enforce permissions
+	const isLocal = new URL(c.req.url).hostname === "localhost" || new URL(c.req.url).hostname === "127.0.0.1";
+	if (!isLocal && !canAccessMailbox(userEmail, mailboxId)) {
+		return c.json({ error: "Forbidden: You don't have access to this mailbox" }, 403);
+	}
 
 	// Verify mailbox exists
 	const key = `mailboxes/${mailboxId}.json`;

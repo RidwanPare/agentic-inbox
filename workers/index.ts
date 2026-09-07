@@ -94,9 +94,22 @@ app.get("/api/v1/config", (c) => {
 
 // -- Mailboxes ------------------------------------------------------
 
+import { USER_PERMISSIONS } from "./lib/permissions";
+
 app.get("/api/v1/mailboxes", async (c) => {
 	const allMailboxes = await listMailboxes(c.env.BUCKET);
-	return c.json(allMailboxes.map((m) => ({ ...m, name: m.id })));
+	const userEmail = c.req.header("cf-access-authenticated-user-email");
+	const isLocal = new URL(c.req.url).hostname === "localhost" || new URL(c.req.url).hostname === "127.0.0.1";
+	
+	let filteredMailboxes = allMailboxes;
+	if (!isLocal && userEmail) {
+		const allowed = USER_PERMISSIONS[userEmail.toLowerCase()] || [];
+		filteredMailboxes = allMailboxes.filter(m => allowed.includes(m.id));
+	} else if (!isLocal && !userEmail) {
+		filteredMailboxes = []; // Bloquer si pas de header en prod
+	}
+
+	return c.json(filteredMailboxes.map((m) => ({ ...m, name: m.id })));
 });
 
 app.post("/api/v1/mailboxes", async (c) => {
