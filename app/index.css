@@ -25,3 +25,26 @@ body {
   margin-top: 0.25em;
   margin-bottom: 0.25em;
 }
+
+:root {
+  /* Override main colors to Koora Group colors */
+  --koora-primary: #B85C38;
+  --koora-secondary: #D6A84F;
+}
+
+/* Force override Kumo primary buttons */
+button.bg-kumo-primary {
+  background-color: var(--koora-primary) !important;
+  color: white !important;
+}
+button.bg-kumo-primary:hover {
+  background-color: var(--koora-secondary) !important;
+}
+
+/* Force override text colors */
+.text-kumo-primary {
+  color: var(--koora-primary) !important;
+}
+.bg-kumo-primary {
+  background-color: var(--koora-primary) !important;
+}

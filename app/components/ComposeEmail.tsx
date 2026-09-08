@@ -52,9 +52,9 @@ export default function ComposeEmail() {
 					<div className="flex items-center gap-2">
 						<div className="flex-1">
 							<Input
-								label="To"
+								label="À"
 								type="text"
-								placeholder="recipient@example.com, another@example.com"
+								placeholder="destinataire@exemple.com"
 								size="sm"
 								value={to}
 								onChange={(e) => setTo(e.target.value)}
@@ -78,7 +78,7 @@ export default function ComposeEmail() {
 							size="sm"
 							value={cc}
 							onChange={(e) => setCc(e.target.value)}
-							placeholder="Separate multiple addresses with commas"
+							placeholder="Séparez les adresses par des virgules"
 						/>
 					)}
 					{showCcBcc && (
@@ -88,13 +88,13 @@ export default function ComposeEmail() {
 							size="sm"
 							value={bcc}
 							onChange={(e) => setBcc(e.target.value)}
-							placeholder="Separate multiple addresses with commas"
+							placeholder="Séparez les adresses par des virgules"
 						/>
 					)}
 					<Input
-						label="Subject"
+						label="Objet"
 						type="text"
-						placeholder="Email subject"
+						placeholder="Objet du mail"
 						size="sm"
 						value={subject}
 						onChange={(e) => setSubject(e.target.value)}
@@ -136,7 +136,7 @@ export default function ComposeEmail() {
 								disabled={isSavingDraft || isSending}
 								icon={<PaperPlaneTiltIcon size={14} />}
 							>
-								{isSending ? "Sending..." : "Send"}
+								{isSending ? "Sending..." : "Envoyer"}
 							</Button>
 						</div>
 					</div>

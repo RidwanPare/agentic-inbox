@@ -93,7 +93,7 @@ export default function HomeRoute() {
 		e.preventDefault();
 		setCreateError(null);
 		if (!newPrefix || !selectedDomain) {
-			setCreateError("Please fill in all fields");
+			setCreateError("Veuillez remplir tous les champs");
 			return;
 		}
 		const email = `${newPrefix}@${selectedDomain}`;
@@ -101,12 +101,12 @@ export default function HomeRoute() {
 		setIsCreating(true);
 		try {
 			await createMailbox.mutateAsync({ email, name });
-			toastManager.add({ title: "Mailbox created successfully!" });
+			toastManager.add({ title: "Boîte de réception créée avec succès !" });
 			setIsCreateOpen(false);
 			setNewPrefix("");
 			setNewName("");
 		} catch (err: unknown) {
-			const message = (err instanceof Error ? err.message : null) || "Failed to create mailbox";
+			const message = (err instanceof Error ? err.message : null) || "Échec de la création de la boîte";
 			setCreateError(message);
 		} finally {
 			setIsCreating(false);
@@ -118,11 +118,11 @@ export default function HomeRoute() {
 		setIsDeleting(true);
 		try {
 			await deleteMailbox.mutateAsync(mailboxToDelete.id);
-			toastManager.add({ title: "Mailbox deleted" });
+			toastManager.add({ title: "Boîte de réception supprimée" });
 			setIsDeleteOpen(false);
 			setMailboxToDelete(null);
 		} catch {
-			toastManager.add({ title: "Failed to delete mailbox", variant: "error" });
+			toastManager.add({ title: "Échec de la suppression de la boîte", variant: "error" });
 		} finally {
 			setIsDeleting(false);
 		}
@@ -223,8 +223,8 @@ export default function HomeRoute() {
 							</h3>
 							<p className="text-sm text-kumo-subtle max-w-sm mb-5">
 								{isConfigured
-									? "Your email routing is configured but no mailboxes have been created yet. They will appear here automatically."
-									: "Create a mailbox to start sending and receiving emails with your domain."}
+									? "Votre routage email est configuré mais aucune boîte n'a encore été créée. Elles apparaîtront ici automatiquement."
+									: "Créez une boîte pour commencer à envoyer et recevoir des emails avec votre domaine."}
 							</p>
 							{!isConfigured && (
 								<Button

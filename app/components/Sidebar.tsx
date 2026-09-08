@@ -30,11 +30,11 @@ const FOLDER_ICONS: Record<string, React.ReactNode> = {
 };
 
 const SYSTEM_FOLDER_LINKS = [
-	{ id: Folders.INBOX, label: "Inbox" },
-	{ id: Folders.SENT, label: "Sent" },
-	{ id: Folders.DRAFT, label: "Drafts" },
-	{ id: Folders.ARCHIVE, label: "Archive" },
-	{ id: Folders.TRASH, label: "Trash" },
+	{ id: Folders.INBOX, label: "Boîte de réception" },
+	{ id: Folders.SENT, label: "Envoyés" },
+	{ id: Folders.DRAFT, label: "Brouillons" },
+	{ id: Folders.ARCHIVE, label: "Archives" },
+	{ id: Folders.TRASH, label: "Corbeille" },
 ];
 
 interface FolderLinkProps {
@@ -122,6 +122,9 @@ export default function Sidebar() {
 
 	return (
 		<aside className="h-full w-64 bg-kumo-recessed flex flex-col shrink-0 border-r border-kumo-line">
+			<div className="px-4 py-4 flex items-center justify-center border-b border-kumo-line mb-2">
+				<img src="/logo.png" alt="Koora Group" className="h-10 object-contain" />
+			</div>
 			{/* Back + identity */}
 			<div className="px-4 pt-4 pb-1">
 				<button
@@ -133,7 +136,7 @@ export default function Sidebar() {
 					className="flex items-center gap-1.5 text-kumo-subtle text-sm hover:text-kumo-default transition-colors mb-2.5 cursor-pointer bg-transparent border-0 p-0"
 				>
 					<CaretLeftIcon size={14} />
-					<span>Mailboxes</span>
+					<span>Boîtes de réception</span>
 				</button>
 				<div className="px-1">
 					<div className="text-base font-semibold text-kumo-default truncate">

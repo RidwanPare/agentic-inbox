@@ -27,31 +27,31 @@ import type { UIMessage } from "ai";
 
 const TOOL_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
 	list_emails: {
-		label: "Fetching emails",
+		label: "Récupération des emails",
 		icon: <EnvelopeSimpleIcon size={14} weight="bold" />,
 	},
 	get_email: {
-		label: "Reading email",
+		label: "Lecture de l'email",
 		icon: <EyeIcon size={14} weight="bold" />,
 	},
 	get_thread: {
-		label: "Loading thread",
+		label: "Chargement du fil",
 		icon: <ArrowBendUpLeftIcon size={14} weight="bold" />,
 	},
 	search_emails: {
-		label: "Searching",
+		label: "Recherche en cours",
 		icon: <MagnifyingGlassIcon size={14} weight="bold" />,
 	},
 	draft_email: {
-		label: "Drafting email",
+		label: "Rédaction de l'email",
 		icon: <PaperPlaneTiltIcon size={14} weight="bold" />,
 	},
 	draft_reply: {
-		label: "Drafting reply",
+		label: "Rédaction de la réponse",
 		icon: <PaperPlaneTiltIcon size={14} weight="bold" />,
 	},
 	discard_draft: {
-		label: "Discarding draft",
+		label: "Suppression du brouillon",
 		icon: <TrashIcon size={14} weight="bold" />,
 	},
 	mark_email_read: {
@@ -59,7 +59,7 @@ const TOOL_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
 		icon: <CheckCircleIcon size={14} weight="bold" />,
 	},
 	move_email: {
-		label: "Moving email",
+		label: "Déplacement de l'email",
 		icon: <EnvelopeSimpleIcon size={14} weight="bold" />,
 	},
 };
@@ -337,7 +337,7 @@ function AgentChatConnected({
 	};
 
 	const suggestedPrompts = [
-		"Show me the latest inbox emails",
+		"Affiche-moi les derniers emails",
 		"Any unread emails?",
 		"Draft a response to the latest email",
 	];
