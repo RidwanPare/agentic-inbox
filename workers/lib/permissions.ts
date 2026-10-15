@@ -7,6 +7,9 @@ export const USER_PERMISSIONS: Record<string, string[]> = {
 	"agbehyavargas@gmail.com": [
 		"kossivi.a@koora-group.com",
 		"contact@koora-group.com"
+	],
+	"moussa.toe001@gmail.com": [
+		"contact@koora-group.com"
 	]
 };
 
