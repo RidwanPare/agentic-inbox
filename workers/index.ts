@@ -105,7 +105,7 @@ app.get("/api/v1/config", (c) => {
 
 // -- Mailboxes ------------------------------------------------------
 
-import { USER_PERMISSIONS } from "./lib/permissions";
+import { USER_PERMISSIONS, canAccessMailbox } from "./lib/permissions";
 
 app.get("/api/v1/mailboxes", async (c) => {
 	const allMailboxes = await listMailboxes(c.env.BUCKET);
@@ -129,6 +129,10 @@ app.post("/api/v1/mailboxes", async (c) => {
 	const allowedAddresses = (c.env.EMAIL_ADDRESSES ?? []) as string[];
 	if (allowedAddresses.length > 0 && !allowedAddresses.map((a) => a.toLowerCase()).includes(email)) {
 		return c.json({ error: "Mailbox creation is restricted to configured EMAIL_ADDRESSES" }, 403);
+	}
+	const isLocal = new URL(c.req.url).hostname === "localhost" || new URL(c.req.url).hostname === "127.0.0.1";
+	if (!isLocal && !canAccessMailbox(c.req.header("cf-access-authenticated-user-email"), email)) {
+		return c.json({ error: "Forbidden: You don't have access to this mailbox" }, 403);
 	}
 	const key = `mailboxes/${email}.json`;
 	if (await c.env.BUCKET.head(key)) return c.json({ error: "Mailbox already exists" }, 409);

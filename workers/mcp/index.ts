@@ -20,6 +20,7 @@ import {
 	toolMarkEmailRead,
 	toolMoveEmail,
 } from "../lib/tools";
+import { canAccessMailbox } from "../lib/permissions";
 import { Folders, FOLDER_TOOL_DESCRIPTION, MOVE_FOLDER_TOOL_DESCRIPTION } from "../../shared/folders";
 import type { Env } from "../types";
 
@@ -61,7 +62,14 @@ function mcpResult(result: Record<string, unknown>) {
  * `/mcp` endpoint and can list mailboxes, read/search emails,
  * draft replies, send messages, and manage folders.
  */
-export class EmailMCP extends McpAgent<Env> {
+export type EmailMCPProps = {
+	/** Cloudflare Access identity of the user who opened the MCP session. */
+	userEmail?: string;
+	/** Local development: mailbox permissions are not enforced. */
+	isDev?: boolean;
+};
+
+export class EmailMCP extends McpAgent<Env, unknown, EmailMCPProps> {
 	server = new McpServer({
 		name: "agentic-inbox",
 		version: "1.0.0",
@@ -70,11 +78,17 @@ export class EmailMCP extends McpAgent<Env> {
 	async init() {
 		const env = this.env;
 
+		const isAllowed = (mailboxId: string) =>
+			!!this.props?.isDev || canAccessMailbox(this.props?.userEmail, mailboxId);
+
 		/**
-		 * Verify a mailbox exists in R2 before operating on it.
-		 * Returns an MCP error response if the mailbox is not found, or null if valid.
+		 * Verify the user may access the mailbox and that it exists in R2 before operating on it.
+		 * Returns an MCP error response if access is denied or the mailbox is not found, or null if valid.
 		 */
 		const verifyMailbox = async (mailboxId: string) => {
+			if (!isAllowed(mailboxId)) {
+				return mcpError(`Access denied to mailbox "${mailboxId}".`);
+			}
 			const obj = await env.BUCKET.head(`mailboxes/${mailboxId}.json`);
 			if (!obj) {
 				return mcpError(`Mailbox "${mailboxId}" not found. Use list_mailboxes to see available mailboxes.`);
@@ -89,7 +103,7 @@ export class EmailMCP extends McpAgent<Env> {
 			{},
 			async () => {
 				const result = await toolListMailboxes(env);
-				return mcpText(result);
+				return mcpText(result.filter((m) => isAllowed(m.id)));
 			},
 		);
 

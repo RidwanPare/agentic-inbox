@@ -3,11 +3,12 @@
 //     https://opensource.org/licenses/Apache-2.0
 
 import { routeAgentRequest } from "agents";
-import { Hono } from "hono";
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import { type Context, Hono } from "hono";
+import { jwtVerify, createRemoteJWKSet, type JWTPayload } from "jose";
 import { createRequestHandler } from "react-router";
 import { app as apiApp, receiveEmail } from "./index";
-import { EmailMCP } from "./mcp";
+import { canAccessMailbox } from "./lib/permissions";
+import { EmailMCP, type EmailMCPProps } from "./mcp";
 import type { Env } from "./types";
 
 export { MailboxDO } from "./durableObject";
@@ -64,30 +65,51 @@ app.use("*", async (c, next) => {
 		return c.text("Missing required CF Access JWT", 403);
 	}
 
+	let payload: JWTPayload;
 	try {
 		const { issuer, certsUrl } = getAccessUrls(TEAM_DOMAIN);
 		const JWKS = createRemoteJWKSet(certsUrl);
-		await jwtVerify(token, JWKS, {
+		({ payload } = await jwtVerify(token, JWKS, {
 			issuer,
 			audience: POLICY_AUD,
-		});
+		}));
 	} catch {
 		return c.text("Invalid or expired Access token", 403);
 	}
 
-	// Authorization model note: once a teammate passes the shared Cloudflare
-	// Access policy, they can access all mailboxes in this app by design.
+	// Mailbox permissions (lib/permissions.ts) are keyed on this header, so it
+	// must match the identity of the verified token and cannot be forged.
+	const headerEmail = c.req.header("cf-access-authenticated-user-email");
+	if (headerEmail && headerEmail.toLowerCase() !== String(payload.email ?? "").toLowerCase()) {
+		return c.text("Access identity mismatch", 403);
+	}
+
 	return next();
 });
 
 // MCP server endpoint — used by AI coding tools (ProtoAgent, Claude Code, Cursor, etc.)
 // Must be before API routes and React Router catch-all
 const mcpHandler = EmailMCP.serve("/mcp", { binding: "EMAIL_MCP" });
+
+// The MCP tools check mailbox permissions against these props.
+// McpAgent.serve only reads ctx.props and ctx.waitUntil.
+function mcpExecutionContext(c: Context<{ Bindings: Env }>): ExecutionContext {
+	const ctx = c.executionCtx as ExecutionContext;
+	const props: EmailMCPProps = {
+		userEmail: c.req.header("cf-access-authenticated-user-email"),
+		isDev: import.meta.env.DEV,
+	};
+	return {
+		waitUntil: (promise: Promise<unknown>) => ctx.waitUntil(promise),
+		passThroughOnException: () => ctx.passThroughOnException(),
+		props,
+	} as ExecutionContext;
+}
 app.all("/mcp", async (c) => {
-	return mcpHandler.fetch(c.req.raw, c.env, c.executionCtx as ExecutionContext);
+	return mcpHandler.fetch(c.req.raw, c.env, mcpExecutionContext(c));
 });
 app.all("/mcp/*", async (c) => {
-	return mcpHandler.fetch(c.req.raw, c.env, c.executionCtx as ExecutionContext);
+	return mcpHandler.fetch(c.req.raw, c.env, mcpExecutionContext(c));
 });
 
 // Mount the API routes
@@ -95,6 +117,15 @@ app.route("/", apiApp);
 
 // Agent WebSocket routing - must be before React Router catch-all
 app.all("/agents/*", async (c) => {
+	if (!import.meta.env.DEV) {
+		// Same parsing as routeAgentRequest: /agents/<agent>/<name>/...
+		// The EmailAgent instance name is the mailbox it operates on.
+		const [, agentName, instanceName] = new URL(c.req.url).pathname.split("/").filter(Boolean);
+		const userEmail = c.req.header("cf-access-authenticated-user-email");
+		if (agentName !== "email-agent" || !instanceName || !canAccessMailbox(userEmail, instanceName)) {
+			return c.text("Forbidden: You don't have access to this mailbox", 403);
+		}
+	}
 	const response = await routeAgentRequest(c.req.raw, c.env);
 	if (response) return response;
 	return c.text("Agent not found", 404);
