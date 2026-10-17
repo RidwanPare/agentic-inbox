@@ -2,11 +2,13 @@
 export const USER_PERMISSIONS: Record<string, string[]> = {
 	"lawaliridwanpare@gmail.com": [
 		"ridwan.p@koora-group.com",
-		"contact@koora-group.com"
+		"contact@koora-group.com",
+		"dev@koora-group.com"
 	],
 	"agbehyavargas@gmail.com": [
 		"kossivi.a@koora-group.com",
-		"contact@koora-group.com"
+		"contact@koora-group.com",
+		"dev@koora-group.com"
 	],
 	"moussa.toe001@gmail.com": [
 		"contact@koora-group.com"
